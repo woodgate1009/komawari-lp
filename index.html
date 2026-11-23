@@ -3,50 +3,407 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>コマワリワークス</title>
-<meta name="description" content="コマワリワークスは、月末の請求書づくりなど、毎月繰り返される事務作業を引き受けるバックオフィス代行です。">
+<title>コマワリワークス | AI×バックオフィス自動化</title>
+<meta name="description" content="コマワリワークスは、AIを活用して請求書作成・実績集計などの毎月の事務作業を自動化するバックオフィス代行サービスです。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root { color-scheme: light; }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP", sans-serif;
-    color: #1a1a1a; background: #fafafa; line-height: 1.8;
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --ink: #1a1a2e;
+    --ink-light: #4a4a5a;
+    --ink-muted: #8a8a9a;
+    --surface: #ffffff;
+    --surface-alt: #f6f7f9;
+    --surface-raised: #ffffff;
+    --border: #e8e9ed;
+    --accent: #2d5be3;
+    --accent-light: #e8eefb;
+    --accent-hover: #1f47c2;
   }
-  main { max-width: 640px; margin: 0 auto; padding: 64px 24px 48px; }
-  h1 { font-size: 28px; letter-spacing: 0.08em; margin-bottom: 8px; }
-  .tagline { color: #555; margin-bottom: 40px; }
-  h2 { font-size: 16px; border-bottom: 2px solid #1a1a1a; padding-bottom: 4px; margin: 32px 0 12px; }
-  p, li { font-size: 15px; }
-  ul { padding-left: 20px; }
-  dl { display: grid; grid-template-columns: 88px 1fr; gap: 4px 16px; font-size: 15px; }
-  dt { color: #555; }
-  footer { max-width: 640px; margin: 0 auto; padding: 0 24px 40px; color: #888; font-size: 13px; }
-  a { color: #0b5394; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: "Noto Sans JP", sans-serif;
+    color: var(--ink);
+    background: var(--surface);
+    line-height: 1.8;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Nav */
+  .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; transition: background .3s, box-shadow .3s; }
+  .nav.scrolled { background: rgba(255,255,255,.92); backdrop-filter: blur(12px); box-shadow: 0 1px 0 var(--border); }
+  .nav-inner { max-width: 1080px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; }
+  .nav-logo { font-weight: 700; font-size: 16px; letter-spacing: .06em; color: var(--ink); text-decoration: none; }
+  .nav-cta { font-size: 13px; font-weight: 500; color: var(--accent); text-decoration: none; padding: 8px 20px; border: 1px solid var(--accent); border-radius: 6px; transition: all .2s; }
+  .nav-cta:hover { background: var(--accent); color: #fff; }
+
+  /* Hero */
+  .hero { max-width: 1080px; margin: 0 auto; padding: 140px 24px 100px; display: flex; align-items: center; gap: 48px; }
+  .hero-text { flex: 1; min-width: 0; }
+  .hero-visual { flex: 0 0 460px; display: none; }
+  @media (min-width: 960px) { .hero-visual { display: block; } }
+  .hero-label { display: inline-block; font-size: 12px; font-weight: 500; letter-spacing: .15em; color: var(--accent); background: var(--accent-light); padding: 6px 14px; border-radius: 4px; margin-bottom: 28px; }
+  .hero h1 { font-size: clamp(28px, 5vw, 44px); font-weight: 700; line-height: 1.4; letter-spacing: -.01em; }
+  .hero h1 em { font-style: normal; color: var(--accent); }
+  .hero-sub { margin-top: 20px; font-size: 16px; color: var(--ink-light); max-width: 480px; line-height: 1.9; }
+  .hero-actions { margin-top: 40px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .hero-visual svg { width: 100%; height: auto; filter: drop-shadow(0 8px 32px rgba(0,0,0,.08)); }
+  .btn-primary { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: #fff; background: var(--accent); padding: 14px 32px; border-radius: 6px; text-decoration: none; transition: background .2s; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-secondary { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: var(--ink); background: transparent; padding: 14px 32px; border-radius: 6px; border: 1px solid var(--border); text-decoration: none; transition: border-color .2s; }
+  .btn-secondary:hover { border-color: var(--ink-muted); }
+
+  /* Section common */
+  .section { padding: 100px 24px; }
+  .section-alt { background: var(--surface-alt); }
+  .section-inner { max-width: 1080px; margin: 0 auto; }
+  .section-label { font-size: 12px; font-weight: 500; letter-spacing: .15em; color: var(--accent); margin-bottom: 12px; }
+  .section-title { font-size: clamp(22px, 3.5vw, 32px); font-weight: 700; line-height: 1.4; }
+  .section-header { margin-bottom: 56px; }
+
+  /* Features */
+  .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
+  .feature-card { background: var(--surface-raised); border: 1px solid var(--border); border-radius: 12px; padding: 32px 28px; transition: box-shadow .3s, border-color .3s; }
+  .feature-card:hover { border-color: var(--accent); box-shadow: 0 4px 24px rgba(45,91,227,.06); }
+  .feature-icon { width: 44px; height: 44px; border-radius: 10px; background: var(--accent-light); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+  .feature-icon svg { width: 22px; height: 22px; color: var(--accent); }
+  .feature-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 10px; }
+  .feature-card p { font-size: 14px; color: var(--ink-light); line-height: 1.8; }
+
+  /* Flow */
+  .flow-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 32px; counter-reset: step; }
+  .flow-step { position: relative; padding: 36px 28px 28px; }
+  .flow-step::before { counter-increment: step; content: counter(step, decimal-leading-zero); font-size: 48px; font-weight: 700; color: var(--accent-light); line-height: 1; display: block; margin-bottom: 16px; }
+  .flow-step h3 { font-size: 18px; font-weight: 600; margin-bottom: 10px; }
+  .flow-step p { font-size: 14px; color: var(--ink-light); line-height: 1.8; }
+  .flow-connector { display: none; }
+  @media (min-width: 768px) {
+    .flow-grid { grid-template-columns: 1fr auto 1fr auto 1fr; align-items: start; }
+    .flow-connector { display: flex; align-items: center; padding-top: 54px; color: var(--border); }
+    .flow-connector svg { width: 32px; height: 32px; }
+  }
+
+  /* Contact */
+  .contact-box { max-width: 560px; margin: 0 auto; text-align: center; }
+  .contact-box p { font-size: 15px; color: var(--ink-light); margin-bottom: 32px; line-height: 1.9; }
+
+  /* Footer */
+  .footer { border-top: 1px solid var(--border); padding: 48px 24px 40px; }
+  .footer-inner { max-width: 1080px; margin: 0 auto; }
+  .footer-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 24px; align-items: flex-start; }
+  .footer-brand { font-weight: 600; font-size: 15px; letter-spacing: .04em; }
+  .footer-brand span { display: block; font-size: 12px; font-weight: 400; color: var(--ink-muted); margin-top: 4px; }
+  .footer-info canvas { display: block; }
+  .footer-bottom { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 12px; color: var(--ink-muted); text-align: center; }
+
+  /* Fade-in */
+  .fi { opacity: 0; transform: translateY(20px); transition: opacity .6s ease, transform .6s ease; }
+  .fi.v { opacity: 1; transform: translateY(0); }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .hero { padding: 120px 20px 72px; }
+    .section { padding: 72px 20px; }
+    .nav-inner { padding: 14px 20px; }
+    .nav-cta { padding: 7px 16px; }
+  }
 </style>
 </head>
 <body>
-<main>
-  <h1>コマワリワークス</h1>
-  <p class="tagline">毎月の請求書づくりなど、繰り返される事務作業を引き受けます。</p>
 
-  <h2>事業内容</h2>
-  <p>出荷・入出庫・運行実績などの記録をもとに、各社の運賃・料金ルールを適用し、請求の元になる資料を作成するバックオフィス代行を行っています。</p>
-  <ul>
-    <li>請求書作成の代行（実績集計から請求書の発行前チェックまで）</li>
-    <li>月次事務作業の代行</li>
-  </ul>
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">コマワリワークス</a>
+    <a href="#contact" class="nav-cta">お問い合わせ</a>
+  </div>
+</nav>
 
-  <h2>お問い合わせ</h2>
-  <p>メールにてご連絡ください。<br>
-  <a href="mailto:gotou@komawariworks.jp">gotou@komawariworks.jp</a></p>
+<section class="hero">
+  <div class="hero-text">
+    <span class="hero-label">BACK OFFICE AUTOMATION</span>
+    <h1>毎月の事務作業を、<br><em>AIで、引き受けます。</em></h1>
+    <p class="hero-sub">出荷・入出庫・運行実績の集計から請求書の作成まで。<br>繰り返される定型業務をAIで自動化する代行サービスです。</p>
+    <div class="hero-actions">
+      <a href="#contact" class="btn-primary">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+        メールを送信
+      </a>
+      <a href="#features" class="btn-secondary">サービス詳細</a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <svg viewBox="0 0 480 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Window frame -->
+      <rect x="0" y="0" width="480" height="360" rx="10" fill="#fff" stroke="#e0e0e0" stroke-width="1"/>
+      <!-- Title bar -->
+      <rect x="0" y="0" width="480" height="36" rx="10" fill="#f3f4f6"/>
+      <rect x="0" y="10" width="480" height="26" fill="#f3f4f6"/>
+      <circle cx="18" cy="18" r="5" fill="#ff5f57"/>
+      <circle cx="36" cy="18" r="5" fill="#febc2e"/>
+      <circle cx="54" cy="18" r="5" fill="#28c840"/>
+      <text x="240" y="22" text-anchor="middle" font-size="11" fill="#8a8a9a" font-family="sans-serif">運行実績_請求集計_2026年10月.xlsx</text>
+      <!-- Toolbar -->
+      <rect x="0" y="36" width="480" height="28" fill="#f9fafb"/>
+      <line x1="0" y1="64" x2="480" y2="64" stroke="#e5e7eb"/>
+      <text x="16" y="54" font-size="10" fill="#6b7280" font-family="sans-serif">ファイル</text>
+      <text x="56" y="54" font-size="10" fill="#6b7280" font-family="sans-serif">編集</text>
+      <text x="88" y="54" font-size="10" fill="#6b7280" font-family="sans-serif">表示</text>
+      <text x="120" y="54" font-size="10" fill="#6b7280" font-family="sans-serif">挿入</text>
+      <!-- Formula bar -->
+      <rect x="0" y="64" width="480" height="24" fill="#fff"/>
+      <line x1="0" y1="88" x2="480" y2="88" stroke="#e5e7eb"/>
+      <text x="12" y="80" font-size="10" fill="#9ca3af" font-family="sans-serif">fx</text>
+      <rect x="30" y="68" width="1" height="16" fill="#e5e7eb"/>
+      <text x="40" y="80" font-size="10" fill="#374151" font-family="sans-serif">=SUMPRODUCT(D2:D8,E2:E8)</text>
+      <!-- Column headers -->
+      <rect x="0" y="88" width="480" height="22" fill="#f9fafb"/>
+      <line x1="0" y1="110" x2="480" y2="110" stroke="#e5e7eb"/>
+      <text x="20" y="103" font-size="10" fill="#6b7280" font-family="sans-serif" font-weight="600">A</text>
+      <text x="90" y="103" font-size="10" fill="#6b7280" font-family="sans-serif" font-weight="600">B</text>
+      <text x="175" y="103" font-size="10" fill="#6b7280" font-family="sans-serif" font-weight="600">C</text>
+      <text x="260" y="103" font-size="10" fill="#6b7280" font-family="sans-serif" font-weight="600">D</text>
+      <text x="340" y="103" font-size="10" fill="#6b7280" font-family="sans-serif" font-weight="600">E</text>
+      <text x="420" y="103" font-size="10" fill="#6b7280" font-family="sans-serif" font-weight="600">F</text>
+      <!-- Column lines -->
+      <line x1="55" y1="88" x2="55" y2="340" stroke="#f0f0f0"/>
+      <line x1="140" y1="88" x2="140" y2="340" stroke="#f0f0f0"/>
+      <line x1="225" y1="88" x2="225" y2="340" stroke="#f0f0f0"/>
+      <line x1="305" y1="88" x2="305" y2="340" stroke="#f0f0f0"/>
+      <line x1="385" y1="88" x2="385" y2="340" stroke="#f0f0f0"/>
+      <!-- Header row -->
+      <rect x="0" y="110" width="480" height="22" fill="#eef2ff"/>
+      <line x1="0" y1="132" x2="480" y2="132" stroke="#e5e7eb"/>
+      <text x="8" y="125" font-size="10" fill="#374151" font-family="sans-serif" font-weight="600">日付</text>
+      <text x="60" y="125" font-size="10" fill="#374151" font-family="sans-serif" font-weight="600">配送先</text>
+      <text x="145" y="125" font-size="10" fill="#374151" font-family="sans-serif" font-weight="600">品目</text>
+      <text x="230" y="125" font-size="10" fill="#374151" font-family="sans-serif" font-weight="600">数量</text>
+      <text x="310" y="125" font-size="10" fill="#374151" font-family="sans-serif" font-weight="600">単価</text>
+      <text x="390" y="125" font-size="10" fill="#374151" font-family="sans-serif" font-weight="600">小計</text>
+      <!-- Data rows -->
+      <line x1="0" y1="154" x2="480" y2="154" stroke="#f5f5f5"/>
+      <text x="8" y="147" font-size="10" fill="#374151" font-family="sans-serif">10/01</text>
+      <text x="60" y="147" font-size="10" fill="#374151" font-family="sans-serif">東京倉庫A</text>
+      <text x="145" y="147" font-size="10" fill="#374151" font-family="sans-serif">一般貨物</text>
+      <text x="230" y="147" font-size="10" fill="#374151" font-family="sans-serif">12</text>
+      <text x="310" y="147" font-size="10" fill="#374151" font-family="sans-serif">¥18,500</text>
+      <text x="390" y="147" font-size="10" fill="#374151" font-family="sans-serif">¥222,000</text>
 
-  <h2>事業者情報</h2>
-  <dl>
-    <dt>屋号</dt><dd>コマワリワークス</dd>
-    <dt>代表</dt><dd>後藤 康太</dd>
-    <dt>所在地</dt><dd>〒150-0043 東京都渋谷区道玄坂1丁目10-8 渋谷道玄坂東急ビル 2F-C</dd>
-  </dl>
-</main>
-<footer>© 2026 コマワリワークス</footer>
+      <line x1="0" y1="176" x2="480" y2="176" stroke="#f5f5f5"/>
+      <text x="8" y="169" font-size="10" fill="#374151" font-family="sans-serif">10/03</text>
+      <text x="60" y="169" font-size="10" fill="#374151" font-family="sans-serif">横浜港B</text>
+      <text x="145" y="169" font-size="10" fill="#374151" font-family="sans-serif">冷蔵品</text>
+      <text x="230" y="169" font-size="10" fill="#374151" font-family="sans-serif">8</text>
+      <text x="310" y="169" font-size="10" fill="#374151" font-family="sans-serif">¥24,000</text>
+      <text x="390" y="169" font-size="10" fill="#374151" font-family="sans-serif">¥192,000</text>
+
+      <line x1="0" y1="198" x2="480" y2="198" stroke="#f5f5f5"/>
+      <text x="8" y="191" font-size="10" fill="#374151" font-family="sans-serif">10/05</text>
+      <text x="60" y="191" font-size="10" fill="#374151" font-family="sans-serif">千葉DC</text>
+      <text x="145" y="191" font-size="10" fill="#374151" font-family="sans-serif">一般貨物</text>
+      <text x="230" y="191" font-size="10" fill="#374151" font-family="sans-serif">20</text>
+      <text x="310" y="191" font-size="10" fill="#374151" font-family="sans-serif">¥15,200</text>
+      <text x="390" y="191" font-size="10" fill="#374151" font-family="sans-serif">¥304,000</text>
+
+      <line x1="0" y1="220" x2="480" y2="220" stroke="#f5f5f5"/>
+      <text x="8" y="213" font-size="10" fill="#374151" font-family="sans-serif">10/08</text>
+      <text x="60" y="213" font-size="10" fill="#374151" font-family="sans-serif">埼玉倉庫C</text>
+      <text x="145" y="213" font-size="10" fill="#374151" font-family="sans-serif">危険物</text>
+      <text x="230" y="213" font-size="10" fill="#374151" font-family="sans-serif">5</text>
+      <text x="310" y="213" font-size="10" fill="#374151" font-family="sans-serif">¥32,000</text>
+      <text x="390" y="213" font-size="10" fill="#374151" font-family="sans-serif">¥160,000</text>
+
+      <line x1="0" y1="242" x2="480" y2="242" stroke="#f5f5f5"/>
+      <text x="8" y="235" font-size="10" fill="#374151" font-family="sans-serif">10/10</text>
+      <text x="60" y="235" font-size="10" fill="#374151" font-family="sans-serif">東京倉庫A</text>
+      <text x="145" y="235" font-size="10" fill="#374151" font-family="sans-serif">一般貨物</text>
+      <text x="230" y="235" font-size="10" fill="#374151" font-family="sans-serif">15</text>
+      <text x="310" y="235" font-size="10" fill="#374151" font-family="sans-serif">¥18,500</text>
+      <text x="390" y="235" font-size="10" fill="#374151" font-family="sans-serif">¥277,500</text>
+
+      <line x1="0" y1="264" x2="480" y2="264" stroke="#f5f5f5"/>
+      <text x="8" y="257" font-size="10" fill="#374151" font-family="sans-serif">10/12</text>
+      <text x="60" y="257" font-size="10" fill="#374151" font-family="sans-serif">横浜港B</text>
+      <text x="145" y="257" font-size="10" fill="#374151" font-family="sans-serif">冷蔵品</text>
+      <text x="230" y="257" font-size="10" fill="#374151" font-family="sans-serif">10</text>
+      <text x="310" y="257" font-size="10" fill="#374151" font-family="sans-serif">¥24,000</text>
+      <text x="390" y="257" font-size="10" fill="#374151" font-family="sans-serif">¥240,000</text>
+
+      <line x1="0" y1="286" x2="480" y2="286" stroke="#f5f5f5"/>
+      <text x="8" y="279" font-size="10" fill="#374151" font-family="sans-serif">10/15</text>
+      <text x="60" y="279" font-size="10" fill="#374151" font-family="sans-serif">千葉DC</text>
+      <text x="145" y="279" font-size="10" fill="#374151" font-family="sans-serif">一般貨物</text>
+      <text x="230" y="279" font-size="10" fill="#374151" font-family="sans-serif">18</text>
+      <text x="310" y="279" font-size="10" fill="#374151" font-family="sans-serif">¥15,200</text>
+      <text x="390" y="279" font-size="10" fill="#374151" font-family="sans-serif">¥273,600</text>
+
+      <!-- Total row -->
+      <rect x="0" y="296" width="480" height="24" fill="#f0f4ff"/>
+      <line x1="0" y1="296" x2="480" y2="296" stroke="#d0d8e8"/>
+      <line x1="0" y1="320" x2="480" y2="320" stroke="#d0d8e8"/>
+      <text x="310" y="313" font-size="10" fill="#1a1a2e" font-family="sans-serif" font-weight="700">合計</text>
+      <text x="390" y="313" font-size="11" fill="#2d5be3" font-family="sans-serif" font-weight="700">¥1,669,100</text>
+
+      <!-- Selected cell highlight -->
+      <rect x="385" y="132" width="95" height="22" fill="none" stroke="#2d5be3" stroke-width="2"/>
+
+      <!-- Sheet tabs -->
+      <rect x="0" y="340" width="480" height="20" fill="#f3f4f6"/>
+      <rect x="8" y="342" width="64" height="16" rx="2" fill="#fff" stroke="#d0d5dd"/>
+      <text x="20" y="354" font-size="9" fill="#374151" font-family="sans-serif">10月実績</text>
+      <rect x="78" y="342" width="56" height="16" rx="2" fill="#f3f4f6" stroke="#e5e7eb"/>
+      <text x="88" y="354" font-size="9" fill="#9ca3af" font-family="sans-serif">9月実績</text>
+      <rect x="140" y="342" width="56" height="16" rx="2" fill="#f3f4f6" stroke="#e5e7eb"/>
+      <text x="152" y="354" font-size="9" fill="#9ca3af" font-family="sans-serif">マスタ</text>
+    </svg>
+  </div>
+</section>
+
+<section id="features" class="section section-alt">
+  <div class="section-inner">
+    <div class="section-header fi">
+      <div class="section-label">FEATURES</div>
+      <h2 class="section-title">コマワリワークスの強み</h2>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card fi">
+        <div class="feature-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zm8.446-7.189L18 9.75l-.259-1.035a3.375 3.375 0 00-2.456-2.456L14.25 6l1.035-.259a3.375 3.375 0 002.456-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/></svg>
+        </div>
+        <h3>AIによる自動集計</h3>
+        <p>出荷・入出庫・運行実績を自動で読み取り、ミスなく正確に集計します。</p>
+      </div>
+      <div class="feature-card fi">
+        <div class="feature-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75"/></svg>
+        </div>
+        <h3>各社ルールに柔軟対応</h3>
+        <p>運賃・料金体系が取引先ごとに異なっても、個別のルール設定で正確に対応します。</p>
+      </div>
+      <div class="feature-card fi">
+        <div class="feature-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M2.985 19.644l3.181-3.182"/></svg>
+        </div>
+        <h3>月次業務の安定運用</h3>
+        <p>毎月の繰り返し作業を安定して代行。担当者の退職・異動リスクを解消します。</p>
+      </div>
+      <div class="feature-card fi">
+        <div class="feature-icon">
+          <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+        </div>
+        <h3>人的ミスの削減</h3>
+        <p>AIチェックにより転記ミスや計算ミスを防止。請求トラブルを未然に防ぎます。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="flow" class="section">
+  <div class="section-inner">
+    <div class="section-header fi">
+      <div class="section-label">HOW IT WORKS</div>
+      <h2 class="section-title">導入の流れ</h2>
+    </div>
+    <div class="flow-grid">
+      <div class="flow-step fi">
+        <h3>ヒアリング</h3>
+        <p>現在の業務フロー・運賃ルール・使用帳票をお伺いし、最適な自動化プランをご提案します。</p>
+      </div>
+      <div class="flow-connector" aria-hidden="true">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+      </div>
+      <div class="flow-step fi">
+        <h3>セットアップ</h3>
+        <p>AI設定・ルール登録を実施。テスト運用で精度を検証し、安心して移行いただけます。</p>
+      </div>
+      <div class="flow-connector" aria-hidden="true">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+      </div>
+      <div class="flow-step fi">
+        <h3>運用開始</h3>
+        <p>毎月の請求書作成を代行。実績集計からチェックまで、一気通貫でお任せください。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact" class="section section-alt">
+  <div class="section-inner">
+    <div class="contact-box fi">
+      <div class="section-label">CONTACT</div>
+      <h2 class="section-title" style="margin-bottom:16px;">お問い合わせ</h2>
+      <p>まずはお気軽にご相談ください。<br>業務内容をお伺いし、最適なプランをご提案いたします。</p>
+      <a id="mail-btn" class="btn-primary" style="justify-content:center;">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+        メールを送信
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        コマワリワークス
+        <span>AI-Powered Back Office Automation</span>
+      </div>
+      <div class="footer-info">
+        <canvas id="footer-canvas" aria-label="事業者情報"></canvas>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 コマワリワークス</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  // Scroll animations
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('v'); io.unobserve(e.target); }});
+  }, {threshold:.12});
+  document.querySelectorAll('.fi').forEach(function(el){ io.observe(el); });
+
+  // Nav scroll
+  var nav = document.getElementById('nav');
+  window.addEventListener('scroll', function(){
+    nav.classList.toggle('scrolled', window.scrollY > 32);
+  }, {passive:true});
+
+  // Anti-scrape: build mailto and footer info via JS
+  var u = [103,111,116,111,117];
+  var d = [107,111,109,97,119,97,114,105,119,111,114,107,115,46,106,112];
+  var addr = String.fromCharCode.apply(null, u) + '@' + String.fromCharCode.apply(null, d);
+  var mb = document.getElementById('mail-btn');
+  mb.href = 'mai' + 'lto:' + addr;
+
+  // Render footer info on canvas (non-selectable, non-scrapable)
+  var c = document.getElementById('footer-canvas');
+  var dpr = window.devicePixelRatio || 1;
+  var lines = [
+    '代表: 後藤 康太',
+    '〒150-0043',
+    '東京都渋谷区道玄坂1丁目10-8',
+    '渋谷道玄坂東急ビル 2F-C'
+  ];
+  var fs = 13;
+  var lh = 22;
+  var cW = 320;
+  var cH = lines.length * lh + 8;
+  c.width = cW * dpr;
+  c.height = cH * dpr;
+  c.style.width = cW + 'px';
+  c.style.height = cH + 'px';
+  var ctx = c.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.font = '400 ' + fs + 'px "Noto Sans JP", sans-serif';
+  ctx.fillStyle = '#8a8a9a';
+  ctx.textBaseline = 'top';
+  for(var i = 0; i < lines.length; i++){
+    ctx.fillText(lines[i], 0, i * lh + 4);
+  }
+})();
+</script>
 </body>
 </html>
