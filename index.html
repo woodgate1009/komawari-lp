@@ -86,6 +86,19 @@
     .flow-connector svg { width: 32px; height: 32px; }
   }
 
+  /* About */
+  .about-wrap { display: flex; align-items: center; gap: 40px; max-width: 720px; margin: 0 auto; }
+  .about-photo { flex: 0 0 140px; height: 140px; border-radius: 50%; background: var(--surface-alt); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .about-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .about-photo-placeholder { color: var(--ink-muted); font-size: 12px; text-align: center; line-height: 1.5; }
+  .about-body { flex: 1; min-width: 0; }
+  .about-body canvas { display: block; margin-bottom: 8px; }
+  .about-body p { font-size: 14px; color: var(--ink-light); line-height: 1.9; }
+  @media (max-width: 640px) {
+    .about-wrap { flex-direction: column; text-align: center; }
+    .about-photo { flex: none; }
+  }
+
   /* Contact */
   .contact-box { max-width: 560px; margin: 0 auto; text-align: center; }
   .contact-box p { font-size: 15px; color: var(--ink-light); margin-bottom: 32px; line-height: 1.9; }
@@ -329,6 +342,24 @@
   </div>
 </section>
 
+<section id="about" class="section">
+  <div class="section-inner">
+    <div class="section-header fi">
+      <div class="section-label">ABOUT</div>
+      <h2 class="section-title">代表紹介</h2>
+    </div>
+    <div class="about-wrap fi">
+      <div class="about-photo">
+        <span class="about-photo-placeholder">写真を<br>準備中</span>
+      </div>
+      <div class="about-body">
+        <canvas id="about-name" aria-label="代表者名"></canvas>
+        <p>早稲田大学在学。AIを用いたシステム開発に精通し、これまでに数多くのアプリケーション、サービスを制作。AI×経営の視点からお客様の環境に合わせた効率化をご提案します。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="contact" class="section section-alt">
   <div class="section-inner">
     <div class="contact-box fi">
@@ -378,6 +409,19 @@
   var addr = String.fromCharCode.apply(null, u) + '@' + String.fromCharCode.apply(null, d);
   var mb = document.getElementById('mail-btn');
   mb.href = 'mai' + 'lto:' + addr;
+
+  // Render about name on canvas
+  var ac = document.getElementById('about-name');
+  var adpr = window.devicePixelRatio || 1;
+  var aW = 300, aH = 32;
+  ac.width = aW * adpr; ac.height = aH * adpr;
+  ac.style.width = aW + 'px'; ac.style.height = aH + 'px';
+  var actx = ac.getContext('2d');
+  actx.scale(adpr, adpr);
+  actx.font = '600 20px "Noto Sans JP", sans-serif';
+  actx.fillStyle = '#1a1a2e';
+  actx.textBaseline = 'top';
+  actx.fillText('代表  後藤 康太', 0, 4);
 
   // Render footer info on canvas (non-selectable, non-scrapable)
   var c = document.getElementById('footer-canvas');
